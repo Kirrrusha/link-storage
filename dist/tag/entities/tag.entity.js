@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TagEntity = void 0;
+const article_entity_1 = require("../../article/entities/article.entity");
 const typeorm_1 = require("typeorm");
 let TagEntity = class TagEntity {
 };
@@ -21,8 +22,14 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', length: 20, unique: true }),
     __metadata("design:type", String)
 ], TagEntity.prototype, "name", void 0);
+__decorate([
+    (0, typeorm_1.ManyToMany)(() => article_entity_1.ArticleEntity, (article) => article.tags, {
+        eager: false,
+    }),
+    __metadata("design:type", Array)
+], TagEntity.prototype, "articles", void 0);
 TagEntity = __decorate([
-    (0, typeorm_1.Entity)()
+    (0, typeorm_1.Entity)('tags')
 ], TagEntity);
 exports.TagEntity = TagEntity;
 //# sourceMappingURL=tag.entity.js.map

@@ -17,21 +17,35 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const tag_entity_1 = require("./entities/tag.entity");
+const article_entity_1 = require("../article/entities/article.entity");
 let TagService = class TagService {
-    constructor(tagRepository) {
+    constructor(tagRepository, artilcleRepository) {
         this.tagRepository = tagRepository;
+        this.artilcleRepository = artilcleRepository;
     }
     async create(createTagDto) {
-        const result = await this.tagRepository.save(Object.assign({}, createTagDto));
+        const { articles: articleIds, name } = createTagDto;
+        let articles = [];
+        if (articleIds.length) {
+            articles = await this.artilcleRepository.find({
+                where: { id: (0, typeorm_2.In)(articleIds) },
+            });
+        }
+        const result = await this.tagRepository.save({
+            name,
+            articles,
+        });
         return result;
     }
-    findAll() {
-        return this.tagRepository.find();
+    async findAll() {
+        return this.tagRepository.find({
+            relations: ['articles'],
+        });
     }
     async findOne(id) {
         const result = await this.tagRepository.findOne({
             where: { id },
-            relations: ['wasteCategory'],
+            relations: ['articles'],
         });
         if (!result) {
             throw new common_1.NotFoundException();
@@ -39,7 +53,19 @@ let TagService = class TagService {
         return result;
     }
     async update(id, updateTagDto) {
-        return this.tagRepository.save(Object.assign({ id }, updateTagDto));
+        const { articles: articleIds, name } = updateTagDto;
+        let articles = [];
+        if (articleIds.length) {
+            articles = await this.artilcleRepository.find({
+                where: { id: (0, typeorm_2.In)(articleIds) },
+                relations: ['articles'],
+            });
+        }
+        return this.tagRepository.save({
+            id,
+            name,
+            articles,
+        });
     }
     async remove(id) {
         const result = await this.tagRepository.delete(id);
@@ -51,7 +77,9 @@ let TagService = class TagService {
 TagService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(tag_entity_1.TagEntity)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(1, (0, typeorm_1.InjectRepository)(article_entity_1.ArticleEntity)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository])
 ], TagService);
 exports.TagService = TagService;
 //# sourceMappingURL=tag.service.js.map

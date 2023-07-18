@@ -6,21 +6,23 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TagModule = void 0;
+exports.HttpExceptionFilter = void 0;
 const common_1 = require("@nestjs/common");
-const tag_service_1 = require("./tag.service");
-const tag_controller_1 = require("./tag.controller");
-const typeorm_1 = require("@nestjs/typeorm");
-const tag_entity_1 = require("./entities/tag.entity");
-const article_entity_1 = require("../article/entities/article.entity");
-let TagModule = class TagModule {
+let HttpExceptionFilter = class HttpExceptionFilter {
+    catch(exception, host) {
+        const ctx = host.switchToHttp();
+        const response = ctx.getResponse();
+        const request = ctx.getRequest();
+        const status = exception.getStatus();
+        response.status(status).json({
+            statusCode: status,
+            timestamp: new Date().toISOString(),
+            path: request.url,
+        });
+    }
 };
-TagModule = __decorate([
-    (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([tag_entity_1.TagEntity, article_entity_1.ArticleEntity])],
-        controllers: [tag_controller_1.TagController],
-        providers: [tag_service_1.TagService],
-    })
-], TagModule);
-exports.TagModule = TagModule;
-//# sourceMappingURL=tag.module.js.map
+HttpExceptionFilter = __decorate([
+    (0, common_1.Catch)(common_1.HttpException)
+], HttpExceptionFilter);
+exports.HttpExceptionFilter = HttpExceptionFilter;
+//# sourceMappingURL=http-exception.filter.js.map

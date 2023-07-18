@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { TagService } from '../tag.service';
 import { TypeOrmSQLITETestingModule } from '../../../test/TypeORMSQLITETestingModule';
 import { TagEntity } from '../entities/tag.entity';
-import { QueryFailedError, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
 

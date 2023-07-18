@@ -14,7 +14,7 @@ import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { TagEntity } from './entities/tag.entity';
 
 @Controller('tags')
-@ApiTags('Article Tag')
+@ApiTags('Article Tags')
 export class TagController {
   constructor(private readonly tagService: TagService) { }
 

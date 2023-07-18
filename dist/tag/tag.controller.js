@@ -80,7 +80,7 @@ __decorate([
 ], TagController.prototype, "remove", null);
 TagController = __decorate([
     (0, common_1.Controller)('tags'),
-    (0, swagger_1.ApiTags)('Article Tag'),
+    (0, swagger_1.ApiTags)('Article Tags'),
     __metadata("design:paramtypes", [tag_service_1.TagService])
 ], TagController);
 exports.TagController = TagController;

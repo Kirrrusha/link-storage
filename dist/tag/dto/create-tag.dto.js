@@ -19,5 +19,11 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], CreateTagDto.prototype, "name", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        type: (Array),
+    }),
+    __metadata("design:type", Array)
+], CreateTagDto.prototype, "articles", void 0);
 exports.CreateTagDto = CreateTagDto;
 //# sourceMappingURL=create-tag.dto.js.map

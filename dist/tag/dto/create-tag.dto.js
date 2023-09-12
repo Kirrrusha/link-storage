@@ -14,15 +14,13 @@ const swagger_1 = require("@nestjs/swagger");
 class CreateTagDto {
 }
 __decorate([
-    (0, swagger_1.ApiProperty)({
+    swagger_1.ApiProperty({
         type: String,
     }),
     __metadata("design:type", String)
 ], CreateTagDto.prototype, "name", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({
-        type: (Array),
-    }),
+    swagger_1.ApiPropertyOptional(),
     __metadata("design:type", Array)
 ], CreateTagDto.prototype, "articles", void 0);
 exports.CreateTagDto = CreateTagDto;

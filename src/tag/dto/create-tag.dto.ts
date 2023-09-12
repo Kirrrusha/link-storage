@@ -6,8 +6,6 @@ export class CreateTagDto {
   })
   name: string;
 
-  @ApiPropertyOptional({
-    type: Array<number>,
-  })
+  @ApiPropertyOptional()
   articles: number[];
 }

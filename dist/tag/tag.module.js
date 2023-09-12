@@ -16,7 +16,7 @@ const article_entity_1 = require("../article/entities/article.entity");
 let TagModule = class TagModule {
 };
 TagModule = __decorate([
-    (0, common_1.Module)({
+    common_1.Module({
         imports: [typeorm_1.TypeOrmModule.forFeature([tag_entity_1.TagEntity, article_entity_1.ArticleEntity])],
         controllers: [tag_controller_1.TagController],
         providers: [tag_service_1.TagService],

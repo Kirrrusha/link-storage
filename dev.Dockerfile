@@ -1,9 +1,10 @@
-FROM node:16.13.0
+FROM node:18.1.0
 
 WORKDIR /app
 
 COPY . .
 
-RUN yarn
+RUN npm install -g pnpm
 
-CMD ["yarn", "start:dev"]
+# CMD ["pnpm", "start:dev"]
+CMD [ -d "node_modules" ] && pnpm start:dev || pnpm install --frozen-lockfile && pnpm start:dev

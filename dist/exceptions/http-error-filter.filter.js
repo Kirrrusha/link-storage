@@ -47,7 +47,7 @@ let HttpErrorFilter = class HttpErrorFilter {
     }
 };
 HttpErrorFilter = __decorate([
-    (0, common_1.Catch)(),
+    common_1.Catch(),
     __metadata("design:paramtypes", [])
 ], HttpErrorFilter);
 exports.HttpErrorFilter = HttpErrorFilter;

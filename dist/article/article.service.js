@@ -39,7 +39,7 @@ let ArticleService = class ArticleService {
         let tags = [];
         if (tagIds.length) {
             tags = await this.tagRepository.find({
-                where: { id: (0, typeorm_1.In)(tagIds) },
+                where: { id: typeorm_1.In(tagIds) },
             });
         }
         const result = await this.artilcleRepository.save(Object.assign({ tags }, payload));
@@ -65,7 +65,7 @@ let ArticleService = class ArticleService {
         let tags = [];
         if (tagIds.length) {
             tags = await this.tagRepository.find({
-                where: { id: (0, typeorm_1.In)(tagIds) },
+                where: { id: typeorm_1.In(tagIds) },
             });
         }
         return this.artilcleRepository.save(Object.assign({ id,
@@ -79,9 +79,9 @@ let ArticleService = class ArticleService {
     }
 };
 ArticleService = __decorate([
-    (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_2.InjectRepository)(article_entity_1.ArticleEntity)),
-    __param(1, (0, typeorm_2.InjectRepository)(tag_entity_1.TagEntity)),
+    common_1.Injectable(),
+    __param(0, typeorm_2.InjectRepository(article_entity_1.ArticleEntity)),
+    __param(1, typeorm_2.InjectRepository(tag_entity_1.TagEntity)),
     __metadata("design:paramtypes", [typeorm_1.Repository,
         typeorm_1.Repository])
 ], ArticleService);

@@ -6,13 +6,9 @@ export class CreateArticleDto {
   })
   url: string;
 
-  @ApiProperty({
-    type: String,
-  })
+  @ApiProperty()
   content: string;
 
-  @ApiPropertyOptional({
-    type: Array<number>,
-  })
+  @ApiPropertyOptional()
   tags?: number[];
 }

@@ -15,27 +15,27 @@ const typeorm_1 = require("typeorm");
 let ArticleEntity = class ArticleEntity {
 };
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    typeorm_1.PrimaryGeneratedColumn(),
     __metadata("design:type", Number)
 ], ArticleEntity.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 500, unique: true }),
+    typeorm_1.Column({ type: 'varchar', length: 500, unique: true }),
     __metadata("design:type", String)
 ], ArticleEntity.prototype, "url", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar' }),
+    typeorm_1.Column({ type: 'varchar' }),
     __metadata("design:type", String)
 ], ArticleEntity.prototype, "content", void 0);
 __decorate([
-    (0, typeorm_1.ManyToMany)(() => tag_entity_1.TagEntity, (tag) => tag.articles, {
+    typeorm_1.ManyToMany(() => tag_entity_1.TagEntity, (tag) => tag.articles, {
         cascade: true,
         eager: false,
     }),
-    (0, typeorm_1.JoinTable)(),
+    typeorm_1.JoinTable(),
     __metadata("design:type", Array)
 ], ArticleEntity.prototype, "tags", void 0);
 ArticleEntity = __decorate([
-    (0, typeorm_1.Entity)('articles')
+    typeorm_1.Entity('articles')
 ], ArticleEntity);
 exports.ArticleEntity = ArticleEntity;
 //# sourceMappingURL=article.entity.js.map

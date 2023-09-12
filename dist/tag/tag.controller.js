@@ -39,48 +39,48 @@ let TagController = class TagController {
     }
 };
 __decorate([
-    (0, common_1.Post)(),
-    (0, swagger_1.ApiCreatedResponse)({ description: 'Create tag' }),
-    __param(0, (0, common_1.Body)()),
+    common_1.Post(),
+    swagger_1.ApiCreatedResponse({ description: 'Create tag' }),
+    __param(0, common_1.Body()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_tag_dto_1.CreateTagDto]),
     __metadata("design:returntype", Promise)
 ], TagController.prototype, "create", null);
 __decorate([
-    (0, common_1.Get)(),
-    (0, swagger_1.ApiCreatedResponse)({ description: 'Get all tags' }),
+    common_1.Get(),
+    swagger_1.ApiCreatedResponse({ description: 'Get all tags' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], TagController.prototype, "findAll", null);
 __decorate([
-    (0, common_1.Get)(':id'),
-    (0, swagger_1.ApiCreatedResponse)({ description: 'Get tag by id' }),
-    __param(0, (0, common_1.Param)('id')),
+    common_1.Get(':id'),
+    swagger_1.ApiCreatedResponse({ description: 'Get tag by id' }),
+    __param(0, common_1.Param('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], TagController.prototype, "findOne", null);
 __decorate([
-    (0, common_1.Patch)(':id'),
-    (0, swagger_1.ApiCreatedResponse)({ description: 'Update tag' }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)()),
+    common_1.Patch(':id'),
+    swagger_1.ApiCreatedResponse({ description: 'Update tag' }),
+    __param(0, common_1.Param('id')),
+    __param(1, common_1.Body()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, update_tag_dto_1.UpdateTagDto]),
     __metadata("design:returntype", Promise)
 ], TagController.prototype, "update", null);
 __decorate([
-    (0, common_1.Delete)(':id'),
-    (0, swagger_1.ApiCreatedResponse)({ description: 'Remove tag by id' }),
-    __param(0, (0, common_1.Param)('id')),
+    common_1.Delete(':id'),
+    swagger_1.ApiCreatedResponse({ description: 'Remove tag by id' }),
+    __param(0, common_1.Param('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], TagController.prototype, "remove", null);
 TagController = __decorate([
-    (0, common_1.Controller)('tags'),
-    (0, swagger_1.ApiTags)('Article Tags'),
+    common_1.Controller('tags'),
+    swagger_1.ApiTags('Article Tags'),
     __metadata("design:paramtypes", [tag_service_1.TagService])
 ], TagController);
 exports.TagController = TagController;

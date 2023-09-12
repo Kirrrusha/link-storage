@@ -1,11 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 
-@Controller('user')
+import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import { UserId } from '../decorators/user-id.decorator';
+import { CreateUserDto } from './dto/create-user.dto';
+import { ApiTags } from '@nestjs/swagger';
+
+@Controller('users')
+@ApiTags('Users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
+
+  @Get('/me')
+  @UseGuards(JwtAuthGuard)
+  getMe(@UserId() id: number) {
+    return this.userService.findById(id);
+  }
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
@@ -19,16 +29,6 @@ export class UserController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+    return this.userService.findById(+id);
   }
 }

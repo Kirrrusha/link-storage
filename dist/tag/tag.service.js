@@ -28,7 +28,7 @@ let TagService = class TagService {
         let articles = [];
         if (articleIds.length) {
             articles = await this.artilcleRepository.find({
-                where: { id: (0, typeorm_2.In)(articleIds) },
+                where: { id: typeorm_2.In(articleIds) },
             });
         }
         const result = await this.tagRepository.save({
@@ -57,7 +57,7 @@ let TagService = class TagService {
         let articles = [];
         if (articleIds.length) {
             articles = await this.artilcleRepository.find({
-                where: { id: (0, typeorm_2.In)(articleIds) },
+                where: { id: typeorm_2.In(articleIds) },
                 relations: ['articles'],
             });
         }
@@ -75,9 +75,9 @@ let TagService = class TagService {
     }
 };
 TagService = __decorate([
-    (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(tag_entity_1.TagEntity)),
-    __param(1, (0, typeorm_1.InjectRepository)(article_entity_1.ArticleEntity)),
+    common_1.Injectable(),
+    __param(0, typeorm_1.InjectRepository(tag_entity_1.TagEntity)),
+    __param(1, typeorm_1.InjectRepository(article_entity_1.ArticleEntity)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository])
 ], TagService);

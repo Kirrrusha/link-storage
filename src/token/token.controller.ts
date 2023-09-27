@@ -6,7 +6,7 @@ import { ApiTags } from '@nestjs/swagger';
 @Controller('tokens')
 @ApiTags('Tokens')
 export class TokenController {
-  constructor(private tokenService: TokenService) { }
+  constructor(private tokenService: TokenService) {}
 
   @Get()
   getAll() {

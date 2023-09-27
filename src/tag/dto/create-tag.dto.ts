@@ -7,5 +7,5 @@ export class CreateTagDto {
   name: string;
 
   @ApiPropertyOptional()
-  articles: number[];
+  articles?: number[];
 }

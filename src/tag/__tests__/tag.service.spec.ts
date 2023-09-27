@@ -1,32 +1,32 @@
 import { Test } from '@nestjs/testing';
-import { TagService } from '../tag.service';
-import { TypeOrmSQLITETestingModule } from '../../../test/TypeORMSQLITETestingModule';
-import { TagEntity } from '../entities/tag.entity';
-import { Repository } from 'typeorm';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException } from '@nestjs/common';
+import { TagService } from '../TagService';
+import { BadRequestException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaClient } from '@prisma/client';
 
 describe('TagService', () => {
   let tagService: TagService;
-  let tagRepo: Repository<TagEntity>;
+  let prismaService: PrismaService;
+  let prisma: PrismaClient;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
-      imports: [...TypeOrmSQLITETestingModule([TagEntity])],
-      providers: [TagService],
+    const moduleFixture = await Test.createTestingModule({
+      providers: [TagService, PrismaService],
     }).compile();
 
-    tagService = module.get<TagService>(TagService);
-    tagRepo = module.get<Repository<TagEntity>>(getRepositoryToken(TagEntity));
+    tagService = moduleFixture.get<TagService>(TagService);
+    prismaService = moduleFixture.get<PrismaService>(PrismaService);
+    prisma = prismaService.getPrismaClient();
   });
 
   afterEach(async () => {
-    await tagRepo.clear();
+    await prisma.tag.deleteMany({});
+    await prisma.$disconnect();
   });
 
   it('should be defined', () => {
     expect(tagService).toBeDefined();
-    expect(tagRepo).toBeDefined();
+    expect(prismaService).toBeDefined();
   });
 
   it('should return empty list', async () => {
@@ -39,7 +39,9 @@ describe('TagService', () => {
       name: 'title',
     });
 
-    const result = await tagService.findOne(tag.id);
+    const result = await prisma.tag.findUnique({
+      where: { id: tag.id },
+    });
     expect(result).toEqual(
       expect.objectContaining({
         name: 'title',
@@ -48,34 +50,48 @@ describe('TagService', () => {
   });
 
   it('should return error, cant find record', async () => {
-    await expect(tagService.findOne(1)).rejects.toThrowError(NotFoundException);
+    await expect(tagService.findOne(1)).rejects.toThrowError(BadRequestException);
   });
 
   it('should edit record', async () => {
-    const tag = await tagService.create({
-      name: 'WasteCategory1',
+    const tag = await prisma.tag.create({
+      data: {
+        name: 'WasteCategory1',
+      },
     });
 
-    const result = await tagService.update(tag.id, {
+    const updateResult = await tagService.update(tag.id, {
       name: 'title2',
     });
 
-    expect(result).toEqual(
+    expect(updateResult).toEqual(
       expect.objectContaining({
         name: 'title2',
+        articles: [],
       }),
     );
+
+    const tagFindResult = await prisma.tag.findUnique({
+      where: {
+        id: updateResult.id,
+      },
+      include: {
+        articles: true,
+      },
+    });
+
+    expect(tagFindResult).toEqual(expect.objectContaining(updateResult));
   });
 
   it('should remove record', async () => {
-    const result = await tagService.create({
-      name: 'title',
+    const result = await prisma.tag.create({
+      data: { name: 'title' },
     });
-    const result1 = await tagRepo.find();
+    const result1 = await prisma.tag.findMany({});
     expect(result1.length).toEqual(1);
 
     await tagService.remove(result.id);
-    const result2 = await tagRepo.find();
+    const result2 = await prisma.tag.findMany({});
     expect(result2.length).toEqual(0);
   });
 });

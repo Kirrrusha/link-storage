@@ -1,5 +1,5 @@
 import { CreateArticleDto } from './create-article.dto';
-declare const UpdateArticleDto_base: import("@nestjs/common").Type<Partial<CreateArticleDto>>;
+declare const UpdateArticleDto_base: import("@nestjs/mapped-types").MappedType<Pick<CreateArticleDto, "tags">>;
 export declare class UpdateArticleDto extends UpdateArticleDto_base {
 }
 export {};

@@ -1,95 +1,192 @@
-import { DataSource, Repository } from 'typeorm';
 import bcrypt from 'bcrypt';
-import { UserEntity } from './entities/user.entity';
-
 import { CreateUserDto } from './dto/create-user.dto';
-import { StatusEnum } from './enums/status.enum';
 import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Status, User } from '@prisma/client';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
-export class UserRepository extends Repository<UserEntity> {
-    constructor(private dataSource: DataSource) {
-        super(UserEntity, dataSource.createEntityManager());
-    }
-    private readonly saltRounds = 10;
+export class UserRepository {
+  private readonly logger = new Logger(UserRepository.name);
+  constructor(private readonly prisma: PrismaService) {}
+  private readonly saltRounds = 10;
 
-    async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
-        const { role, email } = createUserDto;
-        const salt = await bcrypt.genSalt(this.saltRounds);
-        const password = await this.hashPassword(createUserDto.password, salt);
-        const user = this.save({
-            email,
-            role,
-            status: StatusEnum.pending,
-            password,
-        });
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
+    try {
+      this.logger.log(`CREATE PENDING`);
+      const { role, email } = createUserDto;
+      const salt = await bcrypt.genSalt(this.saltRounds);
+      const passwordHash = await this.hashPassword(createUserDto.password, salt);
+
+      const user = this.prisma.user.create({
+        data: {
+          email,
+          role,
+          status: Status.PENDING,
+          passwordHash,
+        },
+      });
+
+      this.logger.log(`CREATE SUCCESS`);
+
+      return user;
+    } catch (error) {
+      this.logger.error(`CREATE ERROR ${String(error)}`);
+      throw new BadRequestException(error);
+    }
+  }
+
+  async validateUserPassword(authCredentialsDto: AuthCredentialsDto): Promise<User | null> {
+    try {
+      const prefix = `[EMAIL: ${authCredentialsDto.email}]`;
+      this.logger.log(`VALIDATE_USER_BY_PASSWORD ${prefix} PENDING`);
+      const { email, password } = authCredentialsDto;
+      const user = await this.prisma.user.findUnique({ where: { email } });
+      if (!user) {
+        this.logger.error(`VALIDATE_USER_BY_PASSWORD ${prefix} FAIL NOT_FOUND`);
+        throw new NotFoundException();
+      }
+      const isPasswordValid = await this.comparePasswords(password, user.passwordHash);
+
+      if (isPasswordValid) {
+        this.logger.log(`VALIDATE_USER_BY_PASSWORD ${prefix} SUCCESS`);
         return user;
+      } else {
+        this.logger.error(`VALIDATE USER BY PASSWORD ${prefix} NO VALIDATE`);
+        return null;
+      }
+    } catch (error) {
+      this.logger.error(`VALIDATE_USER_BY_PASSWORD ${String(error)}`);
+      throw new BadRequestException(error);
     }
+  }
 
-    async validateUserPassword(
-        authCredentialsDto: AuthCredentialsDto,
-    ): Promise<UserEntity | null> {
-        try {
-            const { email, password } = authCredentialsDto;
-            const user = await this.findOne({ where: { email } });
-            console.log('user', user);
+  private async hashPassword(password: string, salt: string): Promise<string> {
+    return bcrypt.hash(password, salt);
+  }
 
-            if (user && (await user.validatePassword(password))) {
-                return user;
-            } else {
-                return null;
-            }
-        } catch (error) {
-            console.error('validateUserPassword', error)
-        }
+  private async comparePasswords(plainTextPassword: string, hashedPassword: string): Promise<boolean> {
+    return bcrypt.compare(plainTextPassword, hashedPassword);
+  }
+
+  async getAll(): Promise<User[]> {
+    try {
+      this.logger.log(`FIND_ALL PENDING`);
+      const result = await this.prisma.user.findMany();
+      this.logger.log(`FIND_ALL SUCCESS`);
+
+      return result;
+    } catch (error) {
+      this.logger.log(`FIND_ALL ERROR ${String(error)}`);
+      throw new BadRequestException(error);
     }
-    private async hashPassword(password: string, salt: string): Promise<string> {
-        return bcrypt.hash(password, salt);
-    }
+  }
 
-    async getAll(): Promise<UserEntity[]> {
-        return this.find();
-    }
+  async findById(id: number): Promise<User> {
+    const prefix = `[USER ID: ${id}]`;
+    try {
+      const result = await this.prisma.user.findUnique({ where: { id } });
 
-    async findById(id: number): Promise<UserEntity> {
-        return await this.findOne({ where: { id } });
+      if (!result) {
+        this.logger.error(`FIND_ONE ${prefix} NOT FOUND`);
+        throw new NotFoundException();
+      }
+      this.logger.log(`FIND_ONE ${prefix} SUCCESS`);
+      return result;
+    } catch (error) {
+      this.logger.error(`FIND_ONE ${prefix} ${String(error)}`);
+      throw new BadRequestException(error);
     }
+  }
 
-    async verifyUser({ id, status }): Promise<UserEntity> {
-        if (status !== StatusEnum.pending) {
-            throw new BadRequestException({
-                message: 'Invalid status',
-                code: 400
-            })
-        }
-        try {
-            const user = await this.save({ id, status: StatusEnum.active });
-            return user;
-        } catch (error) {
-            console.error(error);
-        }
+  async verifyUser(id: number): Promise<User> {
+    const prefix = `[USER_ID: ${id}]`;
+    try {
+      this.logger.log(`VERIFY_USER ${prefix} PENDING`);
+
+      const currentUser = await this.prisma.user.findUnique({
+        where: { id },
+      });
+
+      if (!currentUser) {
+        this.logger.error(`VERIFY_USER ${prefix} FAIL NOT_FOUND`);
+        throw new NotFoundException();
+      }
+
+      if (currentUser.status !== Status.PENDING) {
+        this.logger.error(`VERIFY_USER ${prefix} INVALID STATUS`);
+        throw new BadRequestException({
+          message: 'Invalid status',
+          code: 400,
+        });
+      }
+      const user = await this.prisma.user.update({
+        where: { id },
+        data: {
+          status: Status.ACTIVE,
+        },
+      });
+      this.logger.log(`VERIFY_USER ${prefix} SUCCESS`);
+
+      return user;
+    } catch (error) {
+      this.logger.error(`VERIFY_USER ${prefix} ${String(error)}`);
+      throw new BadRequestException(error);
     }
+  }
 
-    async findByEmail(email: string): Promise<UserEntity> {
-        return this.findOne({ where: { email } });
+  async findByEmail(email: string): Promise<User> {
+    const prefix = `[USER_EMAIL: ${email}]`;
+    try {
+      this.logger.log(`FIND_BY_EMAIL ${prefix} PENDING`);
+      const user = await this.prisma.user.findUnique({
+        where: { email },
+      });
+      if (!user) {
+        this.logger.error(`FIND_BY_EMAIL ${prefix} FAIL NOT_FOUND`);
+        throw new NotFoundException();
+      }
+
+      this.logger.log(`FIND_BY_EMAIL ${prefix} SUCCESS`);
+      return user;
+    } catch (error) {
+      this.logger.error(`FIND_BY_EMAIL ${prefix} ${String(error)}`);
+      throw new BadRequestException(error);
     }
+  }
 
-    async updateUser(id: number, payload: Partial<UserEntity>) {
-        try {
-            const { email } = payload;
-            const user = await this.save({ id, email });
-
-            return user;
-        } catch (error) {
-            console.error('error', error);
-        }
+  async updateUser(id: number, payload: UpdateUserDto) {
+    const prefix = `[USER_ID: ${id}]`;
+    try {
+      const { email } = payload;
+      this.logger.log(`UPDATE ${prefix} PENDING`);
+      const user = await this.prisma.user.update({
+        where: { id },
+        data: { email },
+      });
+      this.logger.log(`UPDATE ${prefix} SUCCESS`);
+      return user;
+    } catch (error) {
+      this.logger.error(`UPDATE ${prefix} ${String(error)}`);
+      throw new BadRequestException(error);
     }
+  }
 
-    async deleteUser(id: number): Promise<void> {
-        const result = await this.delete(id);
-        if (!result.affected) {
-            throw new NotFoundException();
-        }
+  async deleteUser(id: number): Promise<void> {
+    const prefix = `[USER_ID: ${id}]`;
+    try {
+      this.logger.log(`REMOVE ${prefix} PENDING`);
+
+      const result = await this.prisma.user.delete({ where: { id } });
+      if (!result) {
+        this.logger.error(`REMOVE ${prefix} NOT FOUND`);
+        throw new NotFoundException();
+      }
+      this.logger.log(`REMOVE ${prefix} SUCCESS`);
+    } catch (error) {
+      this.logger.error(`REMOVE ${prefix} ${String(error)}`);
+      throw new BadRequestException(error);
     }
+  }
 }

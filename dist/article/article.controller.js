@@ -39,43 +39,43 @@ let ArticleController = class ArticleController {
     }
 };
 __decorate([
-    common_1.Post(),
-    __param(0, common_1.Body()),
+    (0, common_1.Post)(),
+    __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_article_dto_1.CreateArticleDto]),
     __metadata("design:returntype", Promise)
 ], ArticleController.prototype, "create", null);
 __decorate([
-    common_1.Get(),
+    (0, common_1.Get)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], ArticleController.prototype, "findAll", null);
 __decorate([
-    common_1.Get(':id'),
-    __param(0, common_1.Param('id')),
+    (0, common_1.Get)(':id'),
+    __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], ArticleController.prototype, "findOne", null);
 __decorate([
-    common_1.Patch(':id'),
-    __param(0, common_1.Param('id')),
-    __param(1, common_1.Body()),
+    (0, common_1.Patch)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, update_article_dto_1.UpdateArticleDto]),
     __metadata("design:returntype", Promise)
 ], ArticleController.prototype, "update", null);
 __decorate([
-    common_1.Delete(':id'),
-    __param(0, common_1.Param('id')),
+    (0, common_1.Delete)(':id'),
+    __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], ArticleController.prototype, "remove", null);
 ArticleController = __decorate([
-    common_1.Controller('articles'),
-    swagger_1.ApiTags('Articles'),
+    (0, common_1.Controller)('articles'),
+    (0, swagger_1.ApiTags)('Articles'),
     __metadata("design:paramtypes", [article_service_1.ArticleService])
 ], ArticleController);
 exports.ArticleController = ArticleController;

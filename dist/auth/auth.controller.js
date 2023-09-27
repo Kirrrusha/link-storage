@@ -38,41 +38,41 @@ let AuthController = class AuthController {
     }
 };
 __decorate([
-    common_1.Post('sign-up'),
-    __param(0, common_1.Body(new common_1.ValidationPipe())),
+    (0, common_1.Post)('sign-up'),
+    __param(0, (0, common_1.Body)(new common_1.ValidationPipe())),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_user_dto_1.CreateUserDto]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "signUp", null);
 __decorate([
-    common_1.Post('sign-in'),
-    __param(0, common_1.Body(new common_1.ValidationPipe())),
+    (0, common_1.Post)('sign-in'),
+    __param(0, (0, common_1.Body)(new common_1.ValidationPipe())),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [auth_credentials_dto_1.AuthCredentialsDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "signIp", null);
 __decorate([
-    common_1.Post('refresh-token'),
-    __param(0, common_1.Body(new common_1.ValidationPipe())),
+    (0, common_1.Post)('refresh-token'),
+    __param(0, (0, common_1.Body)(new common_1.ValidationPipe())),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [refresh_token_dto_1.RefreshTokenDto]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "refreshTokens", null);
 __decorate([
-    common_1.Get('confirm'),
-    api_implicit_query_decorator_1.ApiImplicitQuery({
+    (0, common_1.Get)('confirm'),
+    (0, api_implicit_query_decorator_1.ApiImplicitQuery)({
         name: 'confirm-token',
         required: true,
         type: String,
     }),
-    __param(0, common_1.Query(new common_1.ValidationPipe())),
+    __param(0, (0, common_1.Query)(new common_1.ValidationPipe())),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "verifyUser", null);
 AuthController = __decorate([
-    common_1.Controller('auth'),
-    swagger_1.ApiTags('Auth'),
+    (0, common_1.Controller)('auth'),
+    (0, swagger_1.ApiTags)('Auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])
 ], AuthController);
 exports.AuthController = AuthController;

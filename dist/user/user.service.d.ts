@@ -1,19 +1,17 @@
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserEntity } from './entities/user.entity';
 import { UserRepository } from './user.repository';
 import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
+import { User } from '@prisma/client';
 export declare class UserService {
-    private userRepository;
-    private readonly saltRounds;
+    private readonly userRepository;
     constructor(userRepository: UserRepository);
-    findByEmail(email: string): Promise<UserEntity>;
-    findById(id: number): Promise<UserEntity>;
-    create(createUserDto: CreateUserDto): Promise<UserEntity>;
-    update(id: number, updateUserDto: UpdateUserDto): Promise<UserEntity>;
+    findByEmail(email: string): Promise<User>;
+    findById(id: number): Promise<User>;
+    create(createUserDto: CreateUserDto): Promise<User>;
+    update(id: number, updateUserDto: UpdateUserDto): Promise<User>;
     remove(id: number): Promise<void>;
-    findAll(): Promise<UserEntity[]>;
-    validateUserPassword(authCredentialsDto: AuthCredentialsDto): Promise<UserEntity | null>;
-    verifyUser(payload: any): Promise<UserEntity>;
-    private hashPassword;
+    findAll(): Promise<User[]>;
+    validateUserPassword(authCredentialsDto: AuthCredentialsDto): Promise<User | null>;
+    verifyUser(id: number): Promise<User>;
 }

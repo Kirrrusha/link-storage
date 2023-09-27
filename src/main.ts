@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import cookieParser from 'cookie-parser';
+import * as cookieParser from 'cookie-parser';
 import { HttpExceptionFilter } from './exceptions/http-exception.filter';
 // import { HttpErrorFilter } from './exceptions/http-error-filter.filter';
 // import { GlobalExceptionFilter } from 'exceptions/http-entity-exception.filter';
@@ -14,14 +14,9 @@ async function bootstrap() {
   app.enableCors({ credentials: true, origin: true });
   app.use(cookieParser());
 
+  app.setGlobalPrefix('api/v1');
 
-  app.setGlobalPrefix('api/v2');
-
-  const config = new DocumentBuilder()
-    .setTitle('Etonemusor API')
-    .setVersion('3.0')
-    .addBearerAuth()
-    .build();
+  const config = new DocumentBuilder().setTitle('Link Storage API').setVersion('1.0').addBearerAuth().build();
 
   const document = SwaggerModule.createDocument(app, config);
 

@@ -1,24 +1,17 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@nestjs/core");
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const app_module_1 = require("./app.module");
-const cookie_parser_1 = __importDefault(require("cookie-parser"));
+const cookieParser = require("cookie-parser");
 const http_exception_filter_1 = require("./exceptions/http-exception.filter");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule, { cors: false });
     app.enableCors({ credentials: true, origin: true });
-    app.use(cookie_parser_1.default());
+    app.use(cookieParser());
     app.setGlobalPrefix('api/v2');
-    const config = new swagger_1.DocumentBuilder()
-        .setTitle('Etonemusor API')
-        .setVersion('3.0')
-        .addBearerAuth()
-        .build();
+    const config = new swagger_1.DocumentBuilder().setTitle('Link Storage API').setVersion('1.0').addBearerAuth().build();
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup('swagger', app, document, {
         swaggerOptions: {

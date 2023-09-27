@@ -1,43 +1,32 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { ArticleEntity } from './entities/article.entity';
+import { Article } from '@prisma/client';
 
 @Controller('articles')
 @ApiTags('Articles')
 export class ArticleController {
-  constructor(private readonly articleService: ArticleService) { }
+  constructor(private readonly articleService: ArticleService) {}
 
   @Post()
-  create(@Body() createArticleDto: CreateArticleDto): Promise<ArticleEntity> {
+  create(@Body() createArticleDto: CreateArticleDto): Promise<Article> {
     return this.articleService.create(createArticleDto);
   }
 
   @Get()
-  findAll(): Promise<ArticleEntity[]> {
+  findAll(): Promise<Article[]> {
     return this.articleService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<ArticleEntity> {
+  findOne(@Param('id') id: string): Promise<Article> {
     return this.articleService.findOne(+id);
   }
 
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateArticleDto: UpdateArticleDto,
-  ): Promise<ArticleEntity> {
+  update(@Param('id') id: string, @Body() updateArticleDto: UpdateArticleDto): Promise<Article> {
     return this.articleService.update(+id, updateArticleDto);
   }
 

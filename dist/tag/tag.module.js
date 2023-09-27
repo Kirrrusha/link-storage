@@ -10,16 +10,13 @@ exports.TagModule = void 0;
 const common_1 = require("@nestjs/common");
 const tag_service_1 = require("./tag.service");
 const tag_controller_1 = require("./tag.controller");
-const typeorm_1 = require("@nestjs/typeorm");
-const tag_entity_1 = require("./entities/tag.entity");
-const article_entity_1 = require("../article/entities/article.entity");
+const prisma_service_1 = require("../prisma/prisma.service");
 let TagModule = class TagModule {
 };
 TagModule = __decorate([
-    common_1.Module({
-        imports: [typeorm_1.TypeOrmModule.forFeature([tag_entity_1.TagEntity, article_entity_1.ArticleEntity])],
+    (0, common_1.Module)({
         controllers: [tag_controller_1.TagController],
-        providers: [tag_service_1.TagService],
+        providers: [tag_service_1.TagService, prisma_service_1.PrismaService],
     })
 ], TagModule);
 exports.TagModule = TagModule;

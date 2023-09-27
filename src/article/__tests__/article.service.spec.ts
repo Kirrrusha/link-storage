@@ -1,64 +1,58 @@
-import { Test } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 import { ArticleService } from '../article.service';
-import { ArticleEntity } from '../entities/article.entity';
-import { In, Repository } from 'typeorm';
-import { TypeOrmSQLITETestingModule } from '../../../test/TypeORMSQLITETestingModule';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { TagEntity } from '../../tag/entities/tag.entity';
+import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaClient } from '@prisma/client';
 
 describe('ArticleService', () => {
   let articleService: ArticleService;
-  let articleRepo: Repository<ArticleEntity>;
-  let tagRepo: Repository<TagEntity>;
+  let prismaService: PrismaService;
+  let prisma: PrismaClient;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
-      imports: [...TypeOrmSQLITETestingModule([ArticleEntity, TagEntity])],
-      providers: [ArticleService],
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      providers: [ArticleService, PrismaService],
     }).compile();
 
-    articleService = module.get<ArticleService>(ArticleService);
-    articleRepo = module.get<Repository<ArticleEntity>>(
-      getRepositoryToken(ArticleEntity),
-    );
-    tagRepo = module.get<Repository<TagEntity>>(getRepositoryToken(TagEntity));
+    articleService = moduleFixture.get<ArticleService>(ArticleService);
+    prismaService = moduleFixture.get<PrismaService>(PrismaService);
+    prisma = prismaService.getPrismaClient();
   });
 
   afterEach(async () => {
-    await articleRepo.clear();
-    await tagRepo.clear();
+    await prisma.article.deleteMany({});
+    await prisma.tag.deleteMany({});
+    await prisma.$disconnect();
   });
 
   it('should be defined', () => {
     expect(articleService).toBeDefined();
-    expect(articleRepo).toBeDefined();
-    expect(tagRepo).toBeDefined();
+    expect(prismaService).toBeDefined();
   });
 
   it('should create article record with tags', async () => {
-    const createdTag1 = await tagRepo.insert({
-      name: 'tag1',
+    const createdTag1 = await prisma.tag.create({
+      data: {
+        name: 'tag1',
+      },
     });
 
-    const createdTag2 = await tagRepo.insert({
-      name: 'tag2',
+    const createdTag2 = await prisma.tag.create({
+      data: {
+        name: 'tag2',
+      },
     });
 
     const result = await articleService.create({
       url: 'url',
       content: 'content',
-      tags: [createdTag1.raw, createdTag2.raw],
-    });
-
-    const tags = await tagRepo.find({
-      where: { id: In([createdTag1.raw, createdTag2.raw]) },
+      tags: [createdTag1.id, createdTag2.id],
     });
 
     expect(result).toEqual(
       expect.objectContaining({
         url: 'url',
         content: 'content',
-        tags,
+        tags: [createdTag1, createdTag2],
       }),
     );
   });
@@ -80,46 +74,48 @@ describe('ArticleService', () => {
   });
 
   it('should edit article record with tags', async () => {
-    const createdTag1 = await tagRepo.insert({
-      name: 'tag1',
+    const createdTag1 = await prisma.tag.create({
+      data: {
+        name: 'tag1',
+      },
     });
 
-    const createdTag2 = await tagRepo.insert({
-      name: 'tag2',
+    const createdTag2 = await prisma.tag.create({
+      data: {
+        name: 'tag2',
+      },
     });
 
     const resultCreate = await articleService.create({
       url: 'url',
       content: 'content',
-      tags: [createdTag1.raw],
+      tags: [createdTag1.id],
     });
 
-    const tags1 = await tagRepo.find({
-      where: { id: In([createdTag1.raw]) },
+    const tags1 = await prisma.tag.findUnique({
+      where: { id: createdTag1.id },
     });
 
     expect(resultCreate).toEqual(
       expect.objectContaining({
         url: 'url',
         content: 'content',
-        tags: tags1,
+        tags: [tags1],
       }),
     );
 
     const resultEdit = await articleService.update(resultCreate.id, {
-      url: 'url1',
-      content: 'content1',
-      tags: [createdTag1.raw, createdTag2.raw],
+      tags: [createdTag1.id, createdTag2.id],
     });
 
-    const tags2 = await tagRepo.find({
-      where: { id: In([createdTag1.raw, createdTag2.raw]) },
+    const tags2 = await prisma.tag.findMany({
+      where: { id: { in: [createdTag1.id, createdTag2.id] } },
     });
 
     expect(resultEdit).toEqual(
       expect.objectContaining({
-        url: 'url1',
-        content: 'content1',
+        url: 'url',
+        content: 'content',
         tags: tags2,
       }),
     );

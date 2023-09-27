@@ -12,25 +12,15 @@ const article_module_1 = require("./article/article.module");
 const tag_module_1 = require("./tag/tag.module");
 const user_module_1 = require("./user/user.module");
 const auth_module_1 = require("./auth/auth.module");
-const typeorm_1 = require("@nestjs/typeorm");
-const typeorm_config_1 = require("./config/typeorm.config");
 const token_module_1 = require("./token/token.module");
 const mail_module_1 = require("./mail/mail.module");
-const configure_root_1 = require("./config/configure.root");
+const prisma_module_1 = require("./prisma/prisma.module");
+const app_config_module_1 = require("./app-config/app-config.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
-    common_1.Module({
-        imports: [
-            configure_root_1.configModule,
-            typeorm_1.TypeOrmModule.forRoot(typeorm_config_1.typeOrmConfig),
-            article_module_1.ArticleModule,
-            tag_module_1.TagModule,
-            user_module_1.UserModule,
-            auth_module_1.AuthModule,
-            token_module_1.TokenModule,
-            mail_module_1.MailModule,
-        ],
+    (0, common_1.Module)({
+        imports: [article_module_1.ArticleModule, tag_module_1.TagModule, user_module_1.UserModule, auth_module_1.AuthModule, token_module_1.TokenModule, mail_module_1.MailModule, prisma_module_1.PrismaModule, app_config_module_1.AppConfigModule],
     })
 ], AppModule);
 exports.AppModule = AppModule;

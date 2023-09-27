@@ -1,22 +1,15 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Injectable } from '@nestjs/common';
 import { TokenRepository } from './token.repository';
 import { CreateUserTokenDto } from './dto/create-user-token.dto';
-import {
-  ITokenPayload,
-  ITokenResponse,
-} from './interfaces/token-payload.interface';
+import { ITokenPayload, ITokenResponse } from './interfaces/token-payload.interface';
 import { DecodeOptions, SignOptions } from 'jsonwebtoken';
 import { JwtService } from '@nestjs/jwt';
-import { TokenEntity } from './entities/token.entity';
+
+import { Token } from '@prisma/client';
 
 @Injectable()
 export class TokenService {
-  constructor(
-    @InjectRepository(TokenRepository)
-    private tokenRepository: TokenRepository,
-    private readonly jwtService: JwtService,
-  ) { }
+  constructor(private tokenRepository: TokenRepository, private readonly jwtService: JwtService) {}
 
   async createAuthTokens(payload: CreateUserTokenDto): Promise<ITokenResponse> {
     const expiresIn = 60 * 60 * 0.5; // 0.5 hours
@@ -35,30 +28,43 @@ export class TokenService {
     };
   }
 
-  async getAll(): Promise<TokenEntity[]> {
+  async getAll(): Promise<Token[]> {
     return this.tokenRepository.getAll();
   }
 
-  async generateToken(
-    data: ITokenPayload,
-    options?: SignOptions,
-  ): Promise<string> {
+  async generateToken(data: ITokenPayload, options?: SignOptions): Promise<string> {
     return this.jwtService.sign(data, options);
   }
 
   decodeToken(token: string, options?: DecodeOptions): ITokenPayload {
     const data = this.jwtService.decode(token, options);
-    return data as ITokenPayload
+    return data as ITokenPayload;
   }
 
-  async deleteById(id: number) {
+  async deleteById(id: number): Promise<void> {
     return this.tokenRepository.deleteById(id);
   }
-  async deleteRefreshToken(refreshToken: string) {
-    return this.tokenRepository.deleteToken(refreshToken);
+  async deleteRefreshToken(refreshToken: string): Promise<void> {
+    await this.tokenRepository.deleteToken(refreshToken);
   }
 
-  async findRefreshToken(refreshToken: string) {
-    return this.tokenRepository.findRefreshToken(refreshToken)
+  async findRefreshToken(refreshToken: string): Promise<Token> {
+    return this.tokenRepository.findRefreshToken(refreshToken);
+  }
+
+  async validateToken(token: string, deltaTime = 0): Promise<boolean> {
+    try {
+      const decodedToken = this.jwtService.verify(token);
+      if (!decodedToken || !decodedToken.exp) {
+        return false;
+      }
+
+      const currentTime = Math.floor(Date.now() / 1000);
+      const tokenExpireTime = decodedToken.exp;
+
+      return tokenExpireTime > currentTime + deltaTime; // Проверка срока действия
+    } catch (error) {
+      return false; // Ошибка при декодировании токена
+    }
   }
 }

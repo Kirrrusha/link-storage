@@ -8,82 +8,120 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
+var ArticleService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ArticleService = void 0;
 const common_1 = require("@nestjs/common");
-const article_entity_1 = require("./entities/article.entity");
-const typeorm_1 = require("typeorm");
-const typeorm_2 = require("@nestjs/typeorm");
-const tag_entity_1 = require("../tag/entities/tag.entity");
-let ArticleService = class ArticleService {
-    constructor(artilcleRepository, tagRepository) {
-        this.artilcleRepository = artilcleRepository;
-        this.tagRepository = tagRepository;
+const prisma_service_1 = require("../prisma/prisma.service");
+let ArticleService = ArticleService_1 = class ArticleService {
+    constructor(prisma) {
+        this.prisma = prisma;
+        this.logger = new common_1.Logger(ArticleService_1.name);
     }
     async create(createArticleDto) {
-        const { tags: tagIds } = createArticleDto, payload = __rest(createArticleDto, ["tags"]);
-        let tags = [];
-        if (tagIds.length) {
-            tags = await this.tagRepository.find({
-                where: { id: typeorm_1.In(tagIds) },
+        try {
+            const { tags: tagIds = [], url, content } = createArticleDto;
+            this.logger.log(`CREATE PENDING`);
+            const result = await this.prisma.article.create({
+                data: {
+                    url,
+                    content,
+                    tags: {
+                        connect: tagIds.map((id) => ({ id })),
+                    },
+                },
+                include: {
+                    tags: true,
+                },
             });
+            this.logger.log(`CREATE SUCCESS`);
+            return result;
         }
-        const result = await this.artilcleRepository.save(Object.assign({ tags }, payload));
-        return result;
+        catch (error) {
+            this.logger.log(`CREATE ERROR ${String(error)}`);
+            throw new common_1.NotFoundException(error);
+        }
     }
     async findAll() {
-        return this.artilcleRepository.find({
-            relations: ['tags'],
-        });
+        try {
+            this.logger.log(`FIND_ALL PENDING`);
+            const result = await this.prisma.article.findMany();
+            this.logger.log(`FIND_ALL SUCCESS`);
+            return result;
+        }
+        catch (error) {
+            this.logger.log(`FIND_ALL ERROR ${String(error)}`);
+            throw new common_1.BadRequestException(error);
+        }
     }
     async findOne(id) {
-        const result = await this.artilcleRepository.findOne({
-            where: { id },
-            relations: ['tags'],
-        });
-        if (!result) {
-            throw new common_1.NotFoundException();
+        const prefix = `[ARTICLE ID: ${id}]`;
+        try {
+            this.logger.log(`FIND_ONE ${prefix} PENDING`);
+            const result = await this.prisma.article.findUnique({
+                where: { id },
+                include: {
+                    tags: true,
+                },
+            });
+            if (!result) {
+                this.logger.error(`FIND_ONE ${prefix} NOT FOUND`);
+                throw new common_1.NotFoundException();
+            }
+            this.logger.log(`FIND_ONE ${prefix} SUCCESS`);
+            return result;
         }
-        return result;
+        catch (error) {
+            this.logger.error(`FIND_ONE ${prefix} ${String(error)}`);
+            throw new common_1.BadRequestException(error);
+        }
     }
     async update(id, updateArticleDto) {
-        const { tags: tagIds } = updateArticleDto, payload = __rest(updateArticleDto, ["tags"]);
-        let tags = [];
-        if (tagIds.length) {
-            tags = await this.tagRepository.find({
-                where: { id: typeorm_1.In(tagIds) },
+        const prefix = `[ARTICLE ID: ${id}]`;
+        try {
+            this.logger.log(`UPDATE ${prefix} PENDING`);
+            const { tags: tagIds = [] } = updateArticleDto;
+            const article = await this.prisma.article.update({
+                where: { id },
+                data: {
+                    tags: {
+                        connect: tagIds.map((tagId) => ({
+                            id: tagId,
+                        })),
+                    },
+                },
+                include: {
+                    tags: true,
+                },
             });
+            this.logger.log(`UPDATE ${prefix} SUCCESS`);
+            return article;
         }
-        return this.artilcleRepository.save(Object.assign({ id,
-            tags }, payload));
+        catch (error) {
+            this.logger.error(`UPDATE ${prefix} ${String(error)}`);
+            throw new common_1.BadRequestException(error);
+        }
     }
     async remove(id) {
-        const result = await this.artilcleRepository.delete(id);
-        if (!result.affected) {
-            throw new common_1.NotFoundException();
+        const prefix = `[ARTICLE ID: ${id}]`;
+        try {
+            this.logger.log(`REMOVE ${prefix} PENDING`);
+            const result = await this.prisma.article.delete({ where: { id } });
+            if (!result) {
+                this.logger.error(`REMOVE ${prefix} NOT FOUND`);
+                throw new common_1.NotFoundException();
+            }
+            this.logger.log(`REMOVE ${prefix} SUCCESS`);
+        }
+        catch (error) {
+            this.logger.error(`REMOVE ${prefix} ${String(error)}`);
+            throw new common_1.BadRequestException(error);
         }
     }
 };
-ArticleService = __decorate([
-    common_1.Injectable(),
-    __param(0, typeorm_2.InjectRepository(article_entity_1.ArticleEntity)),
-    __param(1, typeorm_2.InjectRepository(tag_entity_1.TagEntity)),
-    __metadata("design:paramtypes", [typeorm_1.Repository,
-        typeorm_1.Repository])
+ArticleService = ArticleService_1 = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], ArticleService);
 exports.ArticleService = ArticleService;
 //# sourceMappingURL=article.service.js.map

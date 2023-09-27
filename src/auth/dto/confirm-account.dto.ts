@@ -1,8 +1,10 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsJWT, IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ConfirmAccountDto {
-    @IsNotEmpty()
-    @ApiProperty()
-    token: string;
+  @IsNotEmpty()
+  @IsString()
+  @IsJWT()
+  @ApiProperty()
+  token: string;
 }

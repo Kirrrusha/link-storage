@@ -8,39 +8,40 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateUserDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
-const role_enum_1 = require("../enums/role.enum");
+const client_1 = require("@prisma/client");
 const class_validator_1 = require("class-validator");
 class CreateUserDto {
 }
 __decorate([
-    class_validator_1.IsEmail(),
-    swagger_1.ApiProperty({
+    (0, class_validator_1.IsEmail)(),
+    (0, swagger_1.ApiProperty)({
         default: 'mister-test@test.ru',
     }),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "email", void 0);
 __decorate([
-    class_validator_1.IsString(),
-    swagger_1.ApiPropertyOptional({
+    (0, class_validator_1.IsString)(),
+    (0, swagger_1.ApiPropertyOptional)({
         default: 'Мистер Тест',
     }),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "fullName", void 0);
 __decorate([
-    class_validator_1.IsString(),
-    swagger_1.ApiProperty({
+    (0, class_validator_1.IsString)(),
+    (0, swagger_1.ApiProperty)({
         default: 'YgzuQ2yj9A2Rsw',
     }),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "password", void 0);
 __decorate([
-    swagger_1.ApiProperty({
-        default: role_enum_1.RoleEnum,
+    (0, swagger_1.ApiProperty)({
+        default: client_1.Role,
     }),
-    __metadata("design:type", String)
+    __metadata("design:type", typeof (_a = typeof client_1.Role !== "undefined" && client_1.Role) === "function" ? _a : Object)
 ], CreateUserDto.prototype, "role", void 0);
 exports.CreateUserDto = CreateUserDto;
 //# sourceMappingURL=create-user.dto.js.map

@@ -20,12 +20,8 @@ let HttpErrorFilter = class HttpErrorFilter {
         const ctx = host.switchToHttp();
         const request = ctx.getRequest();
         const response = ctx.getResponse();
-        const statusCode = exception instanceof common_1.HttpException
-            ? exception.getStatus()
-            : common_1.HttpStatus.INTERNAL_SERVER_ERROR;
-        const message = exception instanceof common_1.HttpException
-            ? exception.message
-            : 'Internal server error';
+        const statusCode = exception instanceof common_1.HttpException ? exception.getStatus() : common_1.HttpStatus.INTERNAL_SERVER_ERROR;
+        const message = exception instanceof common_1.HttpException ? exception.message : 'Internal server error';
         const devErrorResponse = {
             statusCode,
             timestamp: new Date().toISOString(),
@@ -39,15 +35,11 @@ let HttpErrorFilter = class HttpErrorFilter {
             message,
         };
         this.logger.log(`request method: ${request.method} request url${request.url}`, JSON.stringify(devErrorResponse));
-        response
-            .status(statusCode)
-            .json(process.env.NODE_ENV === 'development'
-            ? devErrorResponse
-            : prodErrorResponse);
+        response.status(statusCode).json(process.env.NODE_ENV === 'development' ? devErrorResponse : prodErrorResponse);
     }
 };
 HttpErrorFilter = __decorate([
-    common_1.Catch(),
+    (0, common_1.Catch)(),
     __metadata("design:paramtypes", [])
 ], HttpErrorFilter);
 exports.HttpErrorFilter = HttpErrorFilter;

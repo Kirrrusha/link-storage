@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TagController } from '../tag.controller';
-import { TagService } from '../tag.service';
+import { TagService } from '../TagService';
 import { tagRepositoryMock } from '../mocks/tag-repo.mock';
-import { TagEntity } from '../entities/tag.entity';
 import { BadRequestException } from '@nestjs/common';
+import { Tag } from '@prisma/client';
 
 describe('TagController', () => {
   let controller: TagController;
@@ -36,19 +36,15 @@ describe('TagController', () => {
         id: 2,
         name: 'waste2',
       },
-    ] as TagEntity[];
+    ] as Tag[];
 
-    jest
-      .spyOn(controller['tagService'], 'findAll')
-      .mockImplementation(() => Promise.resolve(result));
+    jest.spyOn(controller['tagService'], 'findAll').mockImplementation(() => Promise.resolve(result));
 
     expect(await controller.findAll()).toBe(result);
   });
 
   it('should throw a Bad Request exception find all tags', async () => {
-    jest
-      .spyOn(controller['tagService'], 'findAll')
-      .mockRejectedValue(new BadRequestException());
+    jest.spyOn(controller['tagService'], 'findAll').mockRejectedValue(new BadRequestException());
 
     expect(controller.findAll()).rejects.toThrowError(BadRequestException);
   });
@@ -57,19 +53,15 @@ describe('TagController', () => {
     const result = {
       id: 1,
       name: 'waste1',
-    } as TagEntity;
+    } as Tag;
 
-    jest
-      .spyOn(controller['tagService'], 'findOne')
-      .mockImplementation(() => Promise.resolve(result));
+    jest.spyOn(controller['tagService'], 'findOne').mockImplementation(() => Promise.resolve(result));
 
     expect(await controller.findOne('1')).toBe(result);
   });
 
   it('should throw a Bad Request exception find tag', async () => {
-    jest
-      .spyOn(controller['tagService'], 'findOne')
-      .mockRejectedValue(new BadRequestException());
+    jest.spyOn(controller['tagService'], 'findOne').mockRejectedValue(new BadRequestException());
 
     expect(controller.findOne('1')).rejects.toThrowError(BadRequestException);
   });

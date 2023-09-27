@@ -21,7 +21,7 @@ const token_module_1 = require("../token/token.module");
 let AuthModule = class AuthModule {
 };
 AuthModule = __decorate([
-    common_1.Module({
+    (0, common_1.Module)({
         imports: [
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],
@@ -37,7 +37,7 @@ AuthModule = __decorate([
             user_module_1.UserModule,
             passport_1.PassportModule,
             mail_module_1.MailModule,
-            token_module_1.TokenModule
+            token_module_1.TokenModule,
         ],
         providers: [auth_service_1.AuthService, local_strategy_1.LocalStrategy, jwt_strategy_1.JwtStrategy],
         controllers: [auth_controller_1.AuthController],

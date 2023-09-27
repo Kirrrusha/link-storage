@@ -1,13 +1,10 @@
-import { Logger, Module } from '@nestjs/common';
-import { TagService } from './tag.service';
+import { Module } from '@nestjs/common';
+import { TagService } from './TagService';
 import { TagController } from './tag.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { TagEntity } from './entities/tag.entity';
-import { ArticleEntity } from '../article/entities/article.entity';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TagEntity, ArticleEntity])],
   controllers: [TagController],
-  providers: [TagService],
+  providers: [TagService, PrismaService],
 })
-export class TagModule { }
+export class TagModule {}

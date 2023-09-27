@@ -8,78 +8,41 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const common_1 = require("@nestjs/common");
-const typeorm_1 = require("@nestjs/typeorm");
 const user_repository_1 = require("./user.repository");
-const status_enum_1 = require("./enums/status.enum");
-const role_enum_1 = require("./enums/role.enum");
-const bcrypt_1 = __importDefault(require("bcrypt"));
 let UserService = class UserService {
     constructor(userRepository) {
         this.userRepository = userRepository;
-        this.saltRounds = 10;
     }
     async findByEmail(email) {
-        try {
-            const result = await this.userRepository.findOne({
-                where: { email },
-            });
-            return result;
-        }
-        catch (e) {
-            console.log('error findByEmail', e);
-        }
+        return this.userRepository.findByEmail(email);
     }
     async findById(id) {
-        return this.userRepository.findOne({
-            where: { id },
-        });
+        return this.userRepository.findById(id);
     }
     async create(createUserDto) {
-        try {
-            const salt = await bcrypt_1.default.genSalt(this.saltRounds);
-            const password = await this.hashPassword(createUserDto.password, salt);
-            const result = await this.userRepository.save(Object.assign(Object.assign({}, createUserDto), { password, status: status_enum_1.StatusEnum.pending, role: role_enum_1.RoleEnum.user }));
-            return result;
-        }
-        catch (e) {
-            console.log('error create', e);
-        }
-        return;
+        return this.userRepository.createUser(createUserDto);
     }
     async update(id, updateUserDto) {
-        return this.userRepository.save(Object.assign({ id }, updateUserDto));
+        return this.userRepository.updateUser(id, updateUserDto);
     }
     async remove(id) {
-        const result = await this.userRepository.delete(id);
-        if (!result.affected) {
-            throw new common_1.NotFoundException();
-        }
+        this.userRepository.deleteUser(id);
     }
     async findAll() {
-        return this.userRepository.find();
+        return this.userRepository.getAll();
     }
     async validateUserPassword(authCredentialsDto) {
         return this.userRepository.validateUserPassword(authCredentialsDto);
     }
-    async verifyUser(payload) {
-        return this.userRepository.verifyUser(payload);
-    }
-    async hashPassword(password, salt) {
-        return bcrypt_1.default.hash(password, salt);
+    async verifyUser(id) {
+        return this.userRepository.verifyUser(id);
     }
 };
 UserService = __decorate([
-    common_1.Injectable(),
-    __param(0, typeorm_1.InjectRepository(user_repository_1.UserRepository)),
+    (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [user_repository_1.UserRepository])
 ], UserService);
 exports.UserService = UserService;

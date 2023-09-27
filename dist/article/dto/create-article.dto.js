@@ -14,17 +14,17 @@ const swagger_1 = require("@nestjs/swagger");
 class CreateArticleDto {
 }
 __decorate([
-    swagger_1.ApiProperty({
+    (0, swagger_1.ApiProperty)({
         type: String,
     }),
     __metadata("design:type", String)
 ], CreateArticleDto.prototype, "url", void 0);
 __decorate([
-    swagger_1.ApiProperty(),
+    (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], CreateArticleDto.prototype, "content", void 0);
 __decorate([
-    swagger_1.ApiPropertyOptional(),
+    (0, swagger_1.ApiPropertyOptional)(),
     __metadata("design:type", Array)
 ], CreateArticleDto.prototype, "tags", void 0);
 exports.CreateArticleDto = CreateArticleDto;

@@ -37,36 +37,36 @@ let UserController = class UserController {
     }
 };
 __decorate([
-    common_1.Get('/me'),
-    common_1.UseGuards(jwt_guard_1.JwtAuthGuard),
-    __param(0, user_id_decorator_1.UserId()),
+    (0, common_1.Get)('/me'),
+    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
+    __param(0, (0, user_id_decorator_1.UserId)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "getMe", null);
 __decorate([
-    common_1.Post(),
-    __param(0, common_1.Body()),
+    (0, common_1.Post)(),
+    __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_user_dto_1.CreateUserDto]),
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "create", null);
 __decorate([
-    common_1.Get(),
+    (0, common_1.Get)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "findAll", null);
 __decorate([
-    common_1.Get(':id'),
-    __param(0, common_1.Param('id')),
+    (0, common_1.Get)(':id'),
+    __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "findOne", null);
 UserController = __decorate([
-    common_1.Controller('users'),
-    swagger_1.ApiTags('Users'),
+    (0, common_1.Controller)('users'),
+    (0, swagger_1.ApiTags)('Users'),
     __metadata("design:paramtypes", [user_service_1.UserService])
 ], UserController);
 exports.UserController = UserController;

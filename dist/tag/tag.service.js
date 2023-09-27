@@ -8,78 +8,118 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
+var TagService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TagService = void 0;
 const common_1 = require("@nestjs/common");
-const typeorm_1 = require("@nestjs/typeorm");
-const typeorm_2 = require("typeorm");
-const tag_entity_1 = require("./entities/tag.entity");
-const article_entity_1 = require("../article/entities/article.entity");
-let TagService = class TagService {
-    constructor(tagRepository, artilcleRepository) {
-        this.tagRepository = tagRepository;
-        this.artilcleRepository = artilcleRepository;
+const prisma_service_1 = require("../prisma/prisma.service");
+let TagService = TagService_1 = class TagService {
+    constructor(prisma) {
+        this.prisma = prisma;
+        this.logger = new common_1.Logger(TagService_1.name);
     }
     async create(createTagDto) {
-        const { articles: articleIds, name } = createTagDto;
-        let articles = [];
-        if (articleIds.length) {
-            articles = await this.artilcleRepository.find({
-                where: { id: typeorm_2.In(articleIds) },
+        try {
+            const { articles = [], name } = createTagDto;
+            this.logger.log(`CREATE PENDING`);
+            const result = await this.prisma.tag.create({
+                data: {
+                    name,
+                    articles: {
+                        connect: articles.map((id) => ({ id })),
+                    },
+                },
+                include: {
+                    articles: true,
+                },
             });
+            this.logger.log(`CREATE SUCCESS`);
+            return result;
         }
-        const result = await this.tagRepository.save({
-            name,
-            articles,
-        });
-        return result;
+        catch (error) {
+            this.logger.log(`CREATE ERROR ${String(error)}`);
+            throw new common_1.BadRequestException(error);
+        }
     }
     async findAll() {
-        return this.tagRepository.find({
-            relations: ['articles'],
-        });
+        try {
+            this.logger.log(`FIND_ALL PENDING`);
+            const result = await this.prisma.tag.findMany();
+            this.logger.log(`FIND_ALL SUCCESS`);
+            return result;
+        }
+        catch (error) {
+            this.logger.log(`FIND_ALL ERROR ${String(error)}`);
+            throw new common_1.BadRequestException(error);
+        }
     }
     async findOne(id) {
-        const result = await this.tagRepository.findOne({
-            where: { id },
-            relations: ['articles'],
-        });
-        if (!result) {
-            throw new common_1.NotFoundException();
+        const prefix = `[TAG ID: ${id}]`;
+        try {
+            this.logger.log(`FIND_ONE ${prefix} PENDING`);
+            const result = await this.prisma.tag.findUnique({
+                where: { id },
+                include: {
+                    articles: true,
+                },
+            });
+            if (!result) {
+                this.logger.error(`FIND_ONE ${prefix} NOT FOUND`);
+                throw new common_1.NotFoundException();
+            }
+            this.logger.log(`FIND_ONE ${prefix} SUCCESS`);
+            return result;
         }
-        return result;
+        catch (error) {
+            this.logger.error(`FIND_ONE ${prefix} ${String(error)}`);
+            throw new common_1.BadRequestException(error);
+        }
     }
     async update(id, updateTagDto) {
-        const { articles: articleIds, name } = updateTagDto;
-        let articles = [];
-        if (articleIds.length) {
-            articles = await this.artilcleRepository.find({
-                where: { id: typeorm_2.In(articleIds) },
-                relations: ['articles'],
+        const prefix = `[TAG ID: ${id}]`;
+        try {
+            this.logger.log(`UPDATE ${prefix} PENDING`);
+            const { articles = [], name } = updateTagDto;
+            const tag = await this.prisma.tag.update({
+                where: { id },
+                data: {
+                    name,
+                    articles: {
+                        connect: articles.map((id) => ({ id })),
+                    },
+                },
+                include: {
+                    articles: true,
+                },
             });
+            this.logger.log(`UPDATE ${prefix} SUCCESS`);
+            return tag;
         }
-        return this.tagRepository.save({
-            id,
-            name,
-            articles,
-        });
+        catch (error) {
+            this.logger.error(`UPDATE ${prefix} ${String(error)}`);
+            throw new common_1.BadRequestException(error);
+        }
     }
     async remove(id) {
-        const result = await this.tagRepository.delete(id);
-        if (!result.affected) {
-            throw new common_1.NotFoundException();
+        const prefix = `[TAG ID: ${id}]`;
+        try {
+            this.logger.log(`REMOVE ${prefix} PENDING`);
+            const result = await this.prisma.tag.delete({ where: { id } });
+            if (!result) {
+                this.logger.error(`REMOVE ${prefix} NOT FOUND`);
+                throw new common_1.NotFoundException();
+            }
+            this.logger.log(`REMOVE ${prefix} SUCCESS`);
+        }
+        catch (error) {
+            this.logger.error(`REMOVE ${prefix} ${String(error)}`);
+            throw new common_1.BadRequestException(error);
         }
     }
 };
-TagService = __decorate([
-    common_1.Injectable(),
-    __param(0, typeorm_1.InjectRepository(tag_entity_1.TagEntity)),
-    __param(1, typeorm_1.InjectRepository(article_entity_1.ArticleEntity)),
-    __metadata("design:paramtypes", [typeorm_2.Repository,
-        typeorm_2.Repository])
+TagService = TagService_1 = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], TagService);
 exports.TagService = TagService;
 //# sourceMappingURL=tag.service.js.map

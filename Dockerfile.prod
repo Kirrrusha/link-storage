@@ -1,0 +1,26 @@
+# Используйте образ Node.js для продакшн
+FROM node:18.1.0 AS production
+
+# Установите переменную окружения NODE_ENV для продакшн
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+
+WORKDIR /usr/src/app
+
+# Копируйте package.json и package-lock.json для установки зависимостей
+COPY package*.json ./
+
+# Установите глобально pnpm
+RUN npm install -g pnpm
+
+# Установите зависимости приложения в продакшн
+RUN pnpm install --only=production
+
+# Скопируйте остальные файлы приложения
+COPY . .
+
+# Скопируйте файлы сборки из образа разработки (если необходимо)
+# COPY --from=development /usr/src/app/dist ./dist
+
+# Укажите команду для запуска приложения в продакшн
+CMD ["pnpm", "start"]

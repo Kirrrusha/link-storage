@@ -4,7 +4,7 @@ import { IMailGunData } from './interfaces/mail.interface';
 
 @Injectable()
 export class MailService {
-  constructor(private readonly mailerService: MailerService) { }
+  constructor(private readonly mailerService: MailerService) {}
 
   send(data: IMailGunData): Promise<ISendMailOptions> {
     return new Promise((res, rej) => {

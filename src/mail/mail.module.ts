@@ -8,7 +8,7 @@ import { MailService } from './mail.service';
     MailerModule.forRoot({
       transport: 'smtps://promo.darthvader@gmail.com:fqf4lYDw4S@smtp.gmail.com',
       defaults: {
-        from: '"nest-modules" <modules@nestjs.com>',
+        from: '"link-storage" <hello@link-storage.com>',
       },
       template: {
         dir: __dirname + '/templates',
@@ -22,4 +22,4 @@ import { MailService } from './mail.service';
   providers: [MailService],
   exports: [MailService],
 })
-export class MailModule { }
+export class MailModule {}

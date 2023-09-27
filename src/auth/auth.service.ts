@@ -2,26 +2,30 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  HttpException,
+  HttpStatus,
+  Logger,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 
-import {
-  ITokenResponse,
-} from '../token/interfaces/token-payload.interface';
+import { ITokenResponse } from '../token/interfaces/token-payload.interface';
 
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { TokenService } from '../token/token.service';
 import { MailService } from '../mail/mail.service';
 import { RefreshTokenDto } from '../token/dto/refresh-token.dto';
 import dayjs from 'dayjs';
-import { UserEntity } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
-import { StatusEnum } from '../user/enums/status.enum';
+import { Status, User } from '@prisma/client';
+import { COMMON_EXCEPTION_ERROR } from '../constants/common.constants';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   private readonly backendAppUrl: string;
+  private readonly expiresInConfirmToken = 60 * 60 * 24; // 24 hours
   // private readonly maxSessionCount: number;
 
   constructor(
@@ -30,52 +34,40 @@ export class AuthService {
     private tokenService: TokenService,
     private mailService: MailService,
   ) {
-    this.backendAppUrl = this.configService.get<string>('BE_API_URL');
+    this.backendAppUrl = this.configService.get<string>('BE_API_URL', 'http://localhost:3030');
     // this.maxSessionCount = this.configService.get<number>('MAX_SESSION_COUNT');
   }
 
   async signUp(createUserDto: CreateUserDto): Promise<ITokenResponse> {
-    try {
-      const candidate = await this.userService.findByEmail(createUserDto.email);
-      console.log('candidate', candidate);
+    this.logger.log('SIGN_UP PENDING');
+    const candidate = await this.userService.findByEmail(createUserDto.email);
 
-      if (candidate) {
-        throw new BadRequestException(
-          `Пользователь с почтовым адресом ${createUserDto.email} уже существует`,
-        );
-      }
-
-      const user = await this.userService.create(createUserDto);
-      console.log('user', user);
-
-      const tokens = await this.tokenService.createAuthTokens({
-        userId: user.id,
-        status: user.status,
-        role: user.role,
-      });
-      console.log('tokens', tokens);
-
-      // await this.sendConfirmation(user);
-      return { ...tokens };
-    } catch (e) {
-      throw new BadRequestException('Something went wrong');
+    if (candidate) {
+      this.logger.error('SIGN_UP USER WITH THIS EMAIL EXIST');
+      throw new BadRequestException(`Пользователь с почтовым адресом ${createUserDto.email} уже существует`);
     }
+
+    const user = await this.userService.create(createUserDto);
+
+    const tokens = await this.tokenService.createAuthTokens({
+      userId: user.id,
+      status: user.status,
+      role: user.role,
+    });
+
+    this.logger.log('SIGN_UP SUCCESS');
+
+    // await this.sendConfirmation(user);
+    return { ...tokens };
   }
 
-  async signIn(
-    authCredentialsDto: AuthCredentialsDto,
-  ): Promise<ITokenResponse> {
-
+  async signIn(authCredentialsDto: AuthCredentialsDto): Promise<ITokenResponse> {
     const candidate = await this.userService.findByEmail(authCredentialsDto.email);
     if (!candidate) {
-      throw new BadRequestException(
-        `Пользователь с почтовым адресом ${authCredentialsDto.email} не существует`,
-      );
+      throw new BadRequestException(`Пользователь с почтовым адресом ${authCredentialsDto.email} не существует`);
     }
 
-    const user = await this.userService.validateUserPassword(
-      authCredentialsDto,
-    );
+    const user = await this.userService.validateUserPassword(authCredentialsDto);
 
     if (!user) {
       throw new UnauthorizedException('Невалидный email или пароль');
@@ -97,11 +89,9 @@ export class AuthService {
     return authTokens;
   }
 
-  async refreshTokens(payload: RefreshTokenDto): Promise<ITokenResponse> {
-    const { expireAt, userId } = await this.tokenService.findRefreshToken(
-      payload.refreshToken,
-    );
-    await this.tokenService.deleteRefreshToken(payload.refreshToken);
+  async updateRefreshTokens(refreshToken: string): Promise<ITokenResponse> {
+    const { expireAt, userId } = await this.tokenService.findRefreshToken(refreshToken);
+    await this.tokenService.deleteRefreshToken(refreshToken);
     if (!dayjs().isAfter(expireAt)) {
       new UnauthorizedException('TOKEN_EXPIRED');
     }
@@ -117,29 +107,29 @@ export class AuthService {
     return tokens;
   }
 
-  async verifyUser(token: string): Promise<UserEntity> {
+  async verifyUser(token: string): Promise<User> {
+    const isValid = this.tokenService.validateToken(token, this.expiresInConfirmToken);
+    if (!isValid) {
+      throw new UnauthorizedException('Не валидный токен');
+    }
     const result = this.tokenService.decodeToken(token);
-    // TODO добавить проверку Experi time больше суток
-    return this.userService.verifyUser({
-      id: result.id,
-      status: result.status,
-    });
+
+    return this.userService.verifyUser(result.id);
   }
 
-  async sendConfirmation(user: UserEntity) {
-    const expiresIn = 60 * 60 * 24; // 24 hours
+  async sendConfirmation(user: User) {
     const tokenPayload = {
       id: user.id,
-      status: StatusEnum.pending,
+      status: Status.PENDING,
     };
 
     const token = await this.tokenService.generateToken(tokenPayload, {
-      expiresIn,
+      expiresIn: this.expiresInConfirmToken,
     });
     const confirmLink = `${this.backendAppUrl}/auth/confirm?token=${token}`;
 
     await this.mailService.send({
-      from: this.configService.get<string>('JS_CODE_MAIL'),
+      from: this.configService.get<string>('MAIL_FROM', 'sender@example.com'),
       to: user.email,
       subject: 'Verify User',
       html: `
@@ -150,6 +140,6 @@ export class AuthService {
   }
 
   async logout(refreshToken: string): Promise<void> {
-    await this.tokenService.deleteRefreshToken(refreshToken)
+    await this.tokenService.deleteRefreshToken(refreshToken);
   }
 }

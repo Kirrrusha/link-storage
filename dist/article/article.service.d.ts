@@ -1,15 +1,18 @@
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
-import { ArticleEntity } from './entities/article.entity';
-import { Repository } from 'typeorm';
-import { TagEntity } from '../tag/entities/tag.entity';
+import { PrismaService } from '../prisma/prisma.service';
+import { Article } from '@prisma/client';
 export declare class ArticleService {
-    private artilcleRepository;
-    private tagRepository;
-    constructor(artilcleRepository: Repository<ArticleEntity>, tagRepository: Repository<TagEntity>);
-    create(createArticleDto: CreateArticleDto): Promise<ArticleEntity>;
-    findAll(): Promise<ArticleEntity[]>;
-    findOne(id: number): Promise<ArticleEntity>;
-    update(id: number, updateArticleDto: UpdateArticleDto): Promise<ArticleEntity>;
+    private prisma;
+    private readonly logger;
+    constructor(prisma: PrismaService);
+    create(createArticleDto: CreateArticleDto): Promise<Article>;
+    findAll(): Promise<{
+        id: number;
+        url: string;
+        content: string;
+    }[]>;
+    findOne(id: number): Promise<Article>;
+    update(id: number, updateArticleDto: UpdateArticleDto): Promise<Article>;
     remove(id: number): Promise<void>;
 }

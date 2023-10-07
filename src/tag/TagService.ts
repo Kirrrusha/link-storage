@@ -4,6 +4,7 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Tag } from '@prisma/client';
 import { COMMON_EXCEPTION_ERROR } from '../constants/common.constants';
+import { NOT_FOUND_TAG } from './tag.constants';
 
 @Injectable()
 export class TagService {
@@ -63,7 +64,7 @@ export class TagService {
 
       if (!result) {
         this.logger.error(`FIND_ONE ${prefix} NOT FOUND`);
-        // throw new NotFoundException(NOT_FOUND_TAG);
+        throw new NotFoundException(NOT_FOUND_TAG);
       }
       this.logger.log(`FIND_ONE ${prefix} SUCCESS`);
       return result;

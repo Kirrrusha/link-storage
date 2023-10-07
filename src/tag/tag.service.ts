@@ -5,7 +5,8 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Tag } from '@prisma/client';
 import { COMMON_EXCEPTION_ERROR } from '../constants/common.constants';
-import { NOT_FOUND } from './tag.constants';
+import { NOT_FOUND_TAG } from './tag.constants';
+import { NOT_FOUND } from '../article/article.constants';
 
 @Injectable()
 export class TagService {

@@ -13,7 +13,7 @@ export class ArticleService {
 
   async create(createArticleDto: CreateArticleDto): Promise<Article> {
     try {
-      const { tags: tagIds = [], url, content, title, isArticle } = createArticleDto;
+      const { tags: tagIds = [], url, content, title, isArticle = false } = createArticleDto;
       this.logger.log(`CREATE PENDING`);
       const result = await this.prisma.article.create({
         data: {

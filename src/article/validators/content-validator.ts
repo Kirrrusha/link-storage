@@ -3,8 +3,8 @@
 import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
 import { CreateArticleDto } from '../dto/create-article.dto';
 
-@ValidatorConstraint({ name: 'customText', async: false })
-export class CustomContentValidator implements ValidatorConstraintInterface {
+@ValidatorConstraint({ name: 'contentToNoIsActive', async: false })
+export class ContentToNoIsActiveValidator implements ValidatorConstraintInterface {
   validate(text: string, args: ValidationArguments) {
     const { object } = args;
     const content = (object as CreateArticleDto)['content']; // Получаем значение поля name из объекта

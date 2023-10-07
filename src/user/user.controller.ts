@@ -13,6 +13,7 @@ export class UserController {
 
   @Get('/me')
   @UseGuards(JwtAuthGuard)
+  // TODO нужно класть user только в httpOnly куку
   getMe(@UserId() id: number) {
     return this.userService.findById(id);
   }

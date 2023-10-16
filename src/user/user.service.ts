@@ -40,4 +40,8 @@ export class UserService {
   async verifyUser(id: number): Promise<User> {
     return this.userRepository.verifyUser(id);
   }
+
+  async isUserExistByEmail(email: string): Promise<boolean> {
+    return this.userRepository.isUserExistByEmail(email);
+  }
 }

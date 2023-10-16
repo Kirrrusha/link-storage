@@ -1,12 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-  Logger,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 
@@ -15,8 +7,7 @@ import { ITokenResponse } from '../token/interfaces/token-payload.interface';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { TokenService } from '../token/token.service';
 import { MailService } from '../mail/mail.service';
-import { RefreshTokenDto } from '../token/dto/refresh-token.dto';
-import dayjs from 'dayjs';
+import * as dayjs from 'dayjs';
 import { UserService } from '../user/user.service';
 import { Status, User } from '@prisma/client';
 import { COMMON_EXCEPTION_ERROR } from '../constants/common.constants';
@@ -26,7 +17,6 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   private readonly backendAppUrl: string;
   private readonly expiresInConfirmToken = 60 * 60 * 24; // 24 hours
-  // private readonly maxSessionCount: number;
 
   constructor(
     private userService: UserService,
@@ -35,30 +25,33 @@ export class AuthService {
     private mailService: MailService,
   ) {
     this.backendAppUrl = this.configService.get<string>('BE_API_URL', 'http://localhost:3030');
-    // this.maxSessionCount = this.configService.get<number>('MAX_SESSION_COUNT');
   }
 
   async signUp(createUserDto: CreateUserDto): Promise<ITokenResponse> {
-    this.logger.log('SIGN_UP PENDING');
-    const candidate = await this.userService.findByEmail(createUserDto.email);
+    try {
+      this.logger.log('SIGN_UP PENDING');
+      const isExistUser = await this.userService.isUserExistByEmail(createUserDto.email);
 
-    if (candidate) {
-      this.logger.error('SIGN_UP USER WITH THIS EMAIL EXIST');
-      throw new BadRequestException(`Пользователь с почтовым адресом ${createUserDto.email} уже существует`);
+      if (isExistUser) {
+        this.logger.error('SIGN_UP USER WITH THIS EMAIL EXIST');
+        throw new BadRequestException(`Пользователь с почтовым адресом ${createUserDto.email} уже существует`);
+      }
+
+      const user = await this.userService.create(createUserDto);
+
+      const tokens = await this.tokenService.createAuthTokens({
+        userId: user.id,
+        status: user.status,
+        role: user.role,
+      });
+      this.sendConfirmation(user);
+
+      this.logger.log('SIGN_UP SUCCESS');
+      return tokens;
+    } catch (error) {
+      this.logger.error(`SIGN_UP ERROR ${String(error)}`);
+      throw new BadRequestException(error);
     }
-
-    const user = await this.userService.create(createUserDto);
-
-    const tokens = await this.tokenService.createAuthTokens({
-      userId: user.id,
-      status: user.status,
-      role: user.role,
-    });
-
-    this.logger.log('SIGN_UP SUCCESS');
-
-    // await this.sendConfirmation(user);
-    return { ...tokens };
   }
 
   async signIn(authCredentialsDto: AuthCredentialsDto): Promise<ITokenResponse> {
@@ -72,13 +65,6 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Невалидный email или пароль');
     }
-
-    // TODO логика по ограничению количества сессий
-    // const allActiveTokens = await this.tokenRepository.findByUserId(user.id);
-
-    // if (allActiveTokens.length > this.maxSessionCount) {
-    //   this.logout();
-    // }
 
     const authTokens = await this.tokenService.createAuthTokens({
       userId: user.id,
@@ -118,25 +104,26 @@ export class AuthService {
   }
 
   async sendConfirmation(user: User) {
-    const tokenPayload = {
-      id: user.id,
-      status: Status.PENDING,
-    };
+    try {
+      const tokenPayload = {
+        id: user.id,
+        status: Status.PENDING,
+      };
 
-    const token = await this.tokenService.generateToken(tokenPayload, {
-      expiresIn: this.expiresInConfirmToken,
-    });
-    const confirmLink = `${this.backendAppUrl}/auth/confirm?token=${token}`;
+      const token = this.tokenService.generateToken(tokenPayload, {
+        expiresIn: this.expiresInConfirmToken,
+      });
+      const confirmLink = `${this.backendAppUrl}/auth/confirm?token=${token}`;
 
-    await this.mailService.send({
-      from: this.configService.get<string>('MAIL_FROM', 'sender@example.com'),
-      to: user.email,
-      subject: 'Verify User',
-      html: `
-                <h3>Привет новый пользователь!</h3>
-                <p>Пожалуйста используйте эту <a href="${confirmLink}">ссылку</a> для подтверждения аккаунта</p>
-            `,
-    });
+      await this.mailService.sendConfirmMail({
+        id: user.id,
+        email: user.email,
+        confirmLink,
+      });
+    } catch (error) {
+      this.logger.error(`MAIL DID NOT SEND ${String(error)}`);
+      throw new BadRequestException(`Письмо не отправлено`);
+    }
   }
 
   async logout(refreshToken: string): Promise<void> {

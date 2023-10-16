@@ -1,3 +1,8 @@
+# node_modules/
+# dist/
+# .pnpm-store/
+# npm-debug
+.git/
 node_modules/
-dist/
-.pnpm-store/
+.gitignore
+docker-compose*.yml

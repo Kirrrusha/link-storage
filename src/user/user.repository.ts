@@ -1,8 +1,8 @@
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { Status, User } from '@prisma/client';
+import { Role, Status, User } from '@prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -15,14 +15,18 @@ export class UserRepository {
   async createUser(createUserDto: CreateUserDto): Promise<User> {
     try {
       this.logger.log(`CREATE PENDING`);
-      const { role, email } = createUserDto;
-      const salt = await bcrypt.genSalt(this.saltRounds);
+      const { email } = createUserDto;
+
+      const salt = await bcrypt.genSalt(this.saltRounds).catch((error) => {
+        this.logger.error(`Error generating salt: ${String(error)}`);
+        throw new Error('Failed to generate salt');
+      });
       const passwordHash = await this.hashPassword(createUserDto.password, salt);
 
       const user = this.prisma.user.create({
         data: {
           email,
-          role,
+          role: Role.USER,
           status: Status.PENDING,
           passwordHash,
         },
@@ -152,6 +156,20 @@ export class UserRepository {
       return user;
     } catch (error) {
       this.logger.error(`FIND_BY_EMAIL ${prefix} ${String(error)}`);
+      throw new BadRequestException(error);
+    }
+  }
+
+  async isUserExistByEmail(email: string): Promise<boolean> {
+    const prefix = `[USER_EMAIL: ${email}]`;
+    try {
+      this.logger.log(`IS_USER_EXIST_BY_EMAIL ${prefix} PENDING`);
+      const user = await this.prisma.user.findUnique({
+        where: { email },
+      });
+      return !!user;
+    } catch (error) {
+      this.logger.error(`IS_USER_EXIST_BY_EMAIL ${prefix} ${String(error)}`);
       throw new BadRequestException(error);
     }
   }

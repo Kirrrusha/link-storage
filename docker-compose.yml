@@ -3,7 +3,7 @@ version: '3.8'
 services:
   dev:
     container_name: link_storage_api_dev
-    image: link_storage-api-dev:1.0.0
+    image: link_storage-api-dev:latest
     build:
       context: .
       target: development
@@ -13,7 +13,7 @@ services:
     command: pnpm run start:dev
     ports:
       - 3000:3000
-      - 9229:9229
+      # - 9229:9229
     networks:
       - link_storage-network
     depends_on:
@@ -21,11 +21,11 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
-    restart: unless-stopped
+    restart: always
 
   prod:
     container_name: link_storage_api_prod
-    image: link_storage-api-prod:1.0.0
+    image: link_storage-api-prod
     build:
       context: .
       target: production

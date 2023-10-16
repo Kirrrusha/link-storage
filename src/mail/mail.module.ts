@@ -1,25 +1,18 @@
 import { Module } from '@nestjs/common';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MailService } from './mail.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { getMailConfig } from './mail.config';
 
 @Module({
   imports: [
-    MailerModule.forRoot({
-      transport: 'smtps://promo.darthvader@gmail.com:fqf4lYDw4S@smtp.gmail.com',
-      defaults: {
-        from: '"link-storage" <hello@link-storage.com>',
-      },
-      template: {
-        dir: __dirname + '/templates',
-        adapter: new HandlebarsAdapter(),
-        options: {
-          strict: true,
-        },
-      },
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: getMailConfig,
     }),
   ],
-  providers: [MailService],
+  providers: [MailService, ConfigService],
   exports: [MailService],
 })
 export class MailModule {}

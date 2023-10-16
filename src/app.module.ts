@@ -6,11 +6,23 @@ import { AuthModule } from './auth/auth.module';
 import { TokenModule } from './token/token.module';
 import { MailModule } from './mail/mail.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { AppConfigModule } from './app-config/app-config.module';
-import { JwtAuthModule } from './jwt-auth/jwt-auth.module';
+import { ConfigModule } from '@nestjs/config';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 @Module({
-  imports: [ArticleModule, TagModule, UserModule, AuthModule, TokenModule, MailModule, PrismaModule, AppConfigModule, JwtAuthModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // no need to import into other modules
+    }),
+    ArticleModule,
+    TagModule,
+    UserModule,
+    AuthModule,
+    TokenModule,
+    MailModule,
+    PrismaModule,
+  ],
   providers: [],
 })
 export class AppModule {}

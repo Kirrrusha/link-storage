@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { TokenRepository } from './token.repository';
 import { CreateUserTokenDto } from './dto/create-user-token.dto';
 import { ITokenPayload, ITokenResponse } from './interfaces/token-payload.interface';
@@ -9,6 +9,7 @@ import { Token } from '@prisma/client';
 
 @Injectable()
 export class TokenService {
+  private readonly logger = new Logger(TokenService.name);
   constructor(private tokenRepository: TokenRepository, private readonly jwtService: JwtService) {}
 
   async createAuthTokens(payload: CreateUserTokenDto): Promise<ITokenResponse> {
@@ -19,7 +20,7 @@ export class TokenService {
       role: payload.role,
     };
 
-    const accessToken = await this.generateToken(tokenPayload, { expiresIn });
+    const accessToken = this.generateToken(tokenPayload, { expiresIn });
     const data = await this.tokenRepository.createRefreshToken(payload.userId);
 
     return {
@@ -32,8 +33,14 @@ export class TokenService {
     return this.tokenRepository.getAll();
   }
 
-  async generateToken(data: ITokenPayload, options?: SignOptions): Promise<string> {
-    return this.jwtService.sign(data, options);
+  generateToken(data: ITokenPayload, options?: SignOptions): string {
+    try {
+      const token = this.jwtService.sign(data);
+      return token;
+    } catch (error) {
+      this.logger.error(`Error generating token: ${String(error)}`);
+      throw new Error('Failed to generate token');
+    }
   }
 
   decodeToken(token: string, options?: DecodeOptions): ITokenPayload {

@@ -1,28 +1,26 @@
 # Используйте образ Node.js для разработки
 FROM node:18.1.0 AS development
 
+ENV NODE_ENV=development
+
 WORKDIR /usr/src/app
 
-
-# Копируйте package.json и package-lock.json для установки зависимостей
-COPY package*.json ./
-COPY prisma ./prisma/
+COPY package.json pnpm-lock.yaml .dockerignore ./
 
 # Установите глобально pnpm и некоторые дополнительные зависимости
 RUN npm install -g pnpm
 RUN pnpm install glob rimraf
 
 # Установите зависимости приложения
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 
 # Скопируйте остальные файлы приложения
 COPY . .
 
-# COPY --from=builder /app/node_modules ./node_modules
-# COPY --from=builder /app/package*.json ./
-# COPY --from=builder /app/dist ./dist
+COPY prisma ./prisma
 
 RUN npx prisma generate
 
 # Укажите команду для запуска приложения в режиме разработки
 CMD ["pnpm", "start:dev"]
+

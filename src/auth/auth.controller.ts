@@ -1,5 +1,5 @@
-import { Body, Controller, Post, ValidationPipe, Get, Query, Req, UseGuards, UnauthorizedException, Res } from '@nestjs/common';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { Body, Controller, Post, ValidationPipe, Get, Query, Req, UnauthorizedException, Res, HttpStatus } from '@nestjs/common';
+import { CreateUserDto } from '../user/dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
@@ -20,37 +20,34 @@ export class AuthController {
     this.expires = new Date(
       dayjs()
         .add(Number(this.configService.get('EXPIRES_IN_DAYS')), 'day')
-        .toISOString(),
+        .format(),
     );
   }
 
   @Post('sign-up')
   async signUp(@Res() res: Response, @Body(new ValidationPipe()) createUserDto: CreateUserDto) {
-    const tokens = await this.authService.signUp(createUserDto);
+    const { refreshToken, accessToken } = await this.authService.signUp(createUserDto);
 
-    const { refreshToken } = tokens;
     res.cookie(this.cookieName, refreshToken, {
       httpOnly: true,
       secure: true,
       expires: this.expires,
       // domain: '.example.com', // Кука доступна для всех поддоменов example.com
-      // path: '/app', // Кука доступна только для URL, начинающихся с /app
     });
-    res.send({ tokens });
+    return res.send({ accessToken });
   }
 
   @Post('sign-in')
-  async signIp(@Body(new ValidationPipe()) authCredentialsDto: AuthCredentialsDto, res: Response) {
-    const tokens = await this.authService.signIn(authCredentialsDto);
-    const { refreshToken } = tokens;
+  async signIn(@Res() res: Response, @Body(new ValidationPipe()) authCredentialsDto: AuthCredentialsDto) {
+    const { refreshToken, accessToken } = await this.authService.signIn(authCredentialsDto);
+
     res.cookie(this.cookieName, refreshToken, {
       httpOnly: true,
       secure: true,
       expires: this.expires,
       // domain: '.example.com', // Кука доступна для всех поддоменов example.com
-      // path: '/app', // Кука доступна только для URL, начинающихся с /app
     });
-    res.send({ accessToken: tokens.accessToken });
+    res.status(HttpStatus.OK).send({ accessToken });
   }
 
   @Post('refresh-token')
@@ -60,14 +57,13 @@ export class AuthController {
       throw new UnauthorizedException();
     }
     const tokens = await this.authService.updateRefreshTokens(refreshToken);
-    res.cookie(this.cookieName, refreshToken, {
+    res.cookie(this.cookieName, tokens.refreshToken, {
       httpOnly: true,
       secure: true,
       expires: this.expires,
       // domain: '.example.com', // Кука доступна для всех поддоменов example.com
-      // path: '/app', // Кука доступна только для URL, начинающихся с /app
     });
-    res.send({ accessToken: tokens.accessToken });
+    return res.send('ok');
   }
 
   @Get('confirm')

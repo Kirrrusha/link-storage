@@ -35,7 +35,7 @@ export class TokenService {
 
   generateToken(data: ITokenPayload, options?: SignOptions): string {
     try {
-      const token = this.jwtService.sign(data);
+      const token = this.jwtService.sign(data, options);
       return token;
     } catch (error) {
       this.logger.error(`Error generating token: ${String(error)}`);

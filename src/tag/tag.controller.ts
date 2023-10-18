@@ -1,12 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { TagService } from './TagService';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { Tag } from '@prisma/client';
+import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 
 @Controller('tags')
 @ApiTags('Article Tags')
+@UseGuards(JwtAuthGuard)
 export class TagController {
   constructor(private readonly tagService: TagService) {}
 

@@ -4,8 +4,6 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import { HttpExceptionFilter } from './exceptions/http-exception.filter';
-// import { HttpErrorFilter } from './exceptions/http-error-filter.filter';
-// import { GlobalExceptionFilter } from 'exceptions/http-entity-exception.filter';
 
 async function bootstrap() {
   // TODO check cors

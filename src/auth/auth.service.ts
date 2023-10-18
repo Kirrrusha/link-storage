@@ -115,7 +115,7 @@ export class AuthService {
       });
       const confirmLink = `${this.backendAppUrl}/auth/confirm?token=${token}`;
 
-      await this.mailService.sendConfirmMail({
+      this.mailService.sendConfirmMail({
         id: user.id,
         email: user.email,
         confirmLink,

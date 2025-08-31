@@ -113,6 +113,6 @@ Thumbs.db
 *.iml
 *.ipr
 *.iws
-
+.vscode/
 # Turbo
 .turbo
